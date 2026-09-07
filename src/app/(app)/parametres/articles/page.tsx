@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/StatusBadge";
+import { ItemThumbnail } from "@/components/ui/ItemThumbnail";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/config";
 import { sortSizes } from "@/lib/sizes";
 
@@ -25,17 +26,20 @@ export default async function ArticlesPage() {
                 href={`/parametres/articles/${item.id}`}
                 className="flex flex-wrap items-center justify-between gap-3 px-5 py-4 hover:bg-slate-50"
               >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-medium text-slate-800">{item.name}</span>
-                    {!item.active && <Pill color="red">Inactif</Pill>}
+                <div className="flex items-center gap-3">
+                  <ItemThumbnail imageUrl={item.imageUrl} size="sm" />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-slate-800">{item.name}</span>
+                      {!item.active && <Pill color="red">Inactif</Pill>}
+                    </div>
+                    <p className="text-xs text-slate-400">
+                      {CATEGORY_LABELS[item.category]} ·{" "}
+                      {sortSizes(item.variants, (v) => v.size)
+                        .map((v) => v.size)
+                        .join(", ")}
+                    </p>
                   </div>
-                  <p className="text-xs text-slate-400">
-                    {CATEGORY_LABELS[item.category]} ·{" "}
-                    {sortSizes(item.variants, (v) => v.size)
-                      .map((v) => v.size)
-                      .join(", ")}
-                  </p>
                 </div>
                 <span className="text-xs text-slate-400">Seuil : {item.stockThreshold}</span>
               </Link>

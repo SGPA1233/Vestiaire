@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { Select, Checkbox } from "@/components/ui/Field";
 import { QuantityStepper } from "@/components/ui/QuantityStepper";
 import { Modal } from "@/components/ui/Modal";
+import { ItemThumbnail } from "@/components/ui/ItemThumbnail";
 import { CATEGORY_LABELS } from "@/lib/config";
 import type { ActiveCatalog } from "@/lib/catalog";
 import { submitPerception } from "./actions";
@@ -185,9 +186,12 @@ export function PerceptionFlow({
                 key={item.id}
                 className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
-                  <p className="font-medium text-slate-800">{item.name}</p>
-                  <p className="text-xs text-slate-400">{CATEGORY_LABELS[item.category]}</p>
+                <div className="flex items-center gap-3">
+                  <ItemThumbnail imageUrl={item.imageUrl} size="sm" />
+                  <div>
+                    <p className="font-medium text-slate-800">{item.name}</p>
+                    <p className="text-xs text-slate-400">{CATEGORY_LABELS[item.category]}</p>
+                  </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-3">
                   <Select

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/Card";
 import { Input, Label, Select, Checkbox } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
+import { ImagePicker } from "@/components/ui/ImagePicker";
 import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/config";
 import { sortSizes } from "@/lib/sizes";
 import { updateItem } from "../actions";
@@ -24,6 +25,7 @@ export default async function ModifierArticlePage({
       <h1 className="text-2xl font-bold text-slate-900">Modifier {item.name}</h1>
       <form action={action} className="flex flex-col gap-6">
         <Card className="flex flex-col gap-4">
+          <ImagePicker name="imageUrl" defaultValue={item.imageUrl} />
           <div>
             <Label htmlFor="name">Nom de l&apos;article</Label>
             <Input id="name" name="name" required defaultValue={item.name} />

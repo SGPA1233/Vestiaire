@@ -17,6 +17,7 @@ const itemSchema = z.object({
   stockThreshold: z.coerce.number().int().min(0),
   active: z.boolean(),
   sizes: z.string().optional(),
+  imageUrl: z.string().optional(),
 });
 
 function parseSizes(raw?: string): string[] {
@@ -43,6 +44,7 @@ export async function createItem(formData: FormData) {
     stockThreshold: formData.get("stockThreshold"),
     active: formData.get("active") === "on",
     sizes: formData.get("sizes")?.toString(),
+    imageUrl: formData.get("imageUrl")?.toString(),
   });
 
   const sizes = parseSizes(parsed.sizes);
@@ -54,6 +56,7 @@ export async function createItem(formData: FormData) {
       model: parsed.model || undefined,
       supplier: parsed.supplier || undefined,
       supplierRef: parsed.supplierRef || undefined,
+      imageUrl: parsed.imageUrl || undefined,
       stockThreshold: parsed.stockThreshold,
       active: parsed.active,
       variants: { create: sizes.map((size) => ({ size, active: true })) },
@@ -84,6 +87,7 @@ export async function updateItem(itemId: string, formData: FormData) {
     stockThreshold: formData.get("stockThreshold"),
     active: formData.get("active") === "on",
     sizes: formData.get("newSizes")?.toString(),
+    imageUrl: formData.get("imageUrl")?.toString(),
   });
 
   const newSizes = parseSizes(parsed.sizes);
@@ -97,6 +101,7 @@ export async function updateItem(itemId: string, formData: FormData) {
         model: parsed.model || null,
         supplier: parsed.supplier || null,
         supplierRef: parsed.supplierRef || null,
+        imageUrl: parsed.imageUrl || null,
         stockThreshold: parsed.stockThreshold,
         active: parsed.active,
       },

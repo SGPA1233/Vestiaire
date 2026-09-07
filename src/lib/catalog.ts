@@ -20,6 +20,7 @@ export async function getActiveCatalog() {
     id: item.id,
     name: item.name,
     category: item.category,
+    imageUrl: item.imageUrl,
     variants: sortSizes(item.variants, (v) => v.size).map((v) => ({
       id: v.id,
       size: v.size,

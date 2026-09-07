@@ -1,0 +1,331 @@
+// Schéma de données — Application de gestion de dotation vêtements
+// Le stock n'est JAMAIS stocké comme une valeur modifiable : il est toujours
+// dérivé de la somme des StockMovement pour un ItemVariant donné.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Utilisateurs & sécurité
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  ADMIN
+  READONLY
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         UserRole @default(ADMIN)
+  active       Boolean  @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs          AuditLog[]
+  distributions      Distribution[]
+  returns            Return[]
+  stockMovements     StockMovement[]
+  corrections        Correction[]
+  passwordResetTokens PasswordResetToken[]
+
+  @@map("users")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@map("password_reset_tokens")
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action      String
+  entityType  String
+  entityId    String?
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// ---------------------------------------------------------------------------
+// Collaborateurs
+// ---------------------------------------------------------------------------
+
+enum ItemCategory {
+  TSHIRT
+  POLO
+  SWEATSHIRT
+  VESTE
+  PANTALON
+  CHAUSSURES
+  BOTTES
+  CASQUETTE
+  ACCESSOIRE
+  AUTRE
+}
+
+model Employee {
+  id          String   @id @default(cuid())
+  firstName   String
+  lastName    String
+  active      Boolean  @default(true)
+  operational Boolean  @default(true)
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sizes         EmployeeSize[]
+  distributions Distribution[]
+  returns       Return[]
+
+  @@index([lastName, firstName])
+  @@map("employees")
+}
+
+model EmployeeSize {
+  id         String       @id @default(cuid())
+  employeeId String
+  employee   Employee     @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  category   ItemCategory
+  size       String
+
+  @@unique([employeeId, category])
+  @@map("employee_sizes")
+}
+
+// ---------------------------------------------------------------------------
+// Articles & stock
+// ---------------------------------------------------------------------------
+
+model Item {
+  id             String       @id @default(cuid())
+  name           String
+  category       ItemCategory
+  model          String?
+  supplier       String?
+  supplierRef    String?
+  active         Boolean      @default(true)
+  stockThreshold Int          @default(5)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  variants ItemVariant[]
+
+  @@map("items")
+}
+
+model ItemVariant {
+  id     String  @id @default(cuid())
+  itemId String
+  item   Item    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  size   String
+  active Boolean @default(true)
+
+  stockMovements    StockMovement[]
+  distributionLines DistributionLine[]
+  returns           Return[]
+
+  @@unique([itemId, size])
+  @@map("item_variants")
+}
+
+enum StockMovementType {
+  RECEPTION
+  DISTRIBUTION
+  RETURN_REUSABLE
+  RETURN_NONREUSABLE
+  CORRECTION
+}
+
+model StockMovement {
+  id              String            @id @default(cuid())
+  itemVariantId   String
+  itemVariant     ItemVariant       @relation(fields: [itemVariantId], references: [id])
+  type            StockMovementType
+  quantity        Int // delta signé : positif = entrée, négatif = sortie
+  date            DateTime          @default(now())
+  supplier        String?
+  orderReference  String?
+  note            String?
+  createdByUserId String
+  createdByUser   User              @relation(fields: [createdByUserId], references: [id])
+  createdAt       DateTime          @default(now())
+
+  @@index([itemVariantId])
+  @@map("stock_movements")
+}
+
+// ---------------------------------------------------------------------------
+// Campagnes
+// ---------------------------------------------------------------------------
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  isActive  Boolean  @default(false)
+  isArchive Boolean  @default(false) // "Anciennes dotations" (historique importé)
+  createdAt DateTime @default(now())
+
+  distributions Distribution[]
+
+  @@map("campaigns")
+}
+
+// ---------------------------------------------------------------------------
+// Distributions & retours
+// ---------------------------------------------------------------------------
+
+enum DistributionSource {
+  NORMAL
+  MIGRATION // import équipements actifs (chaussures/bottes) depuis l'ancien système
+  ARCHIVE // ancien historique V1/V2 pur, non actif
+}
+
+model Distribution {
+  id                  String             @id @default(cuid())
+  employeeId          String
+  employee            Employee           @relation(fields: [employeeId], references: [id])
+  campaignId          String
+  campaign            Campaign           @relation(fields: [campaignId], references: [id])
+  date                DateTime           @default(now())
+  source              DistributionSource @default(NORMAL)
+  affectsStock        Boolean            @default(true) // false pour migration/archive
+  countsAsCurrentlyHeld Boolean          @default(true) // false pour archive pure
+  note                String?
+  createdByUserId     String
+  createdByUser       User               @relation(fields: [createdByUserId], references: [id])
+  createdAt           DateTime           @default(now())
+
+  lines       DistributionLine[]
+  signature   Signature?
+
+  @@index([employeeId])
+  @@index([campaignId])
+  @@map("distributions")
+}
+
+model DistributionLine {
+  id                String      @id @default(cuid())
+  distributionId    String
+  distribution      Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  itemVariantId     String
+  itemVariant       ItemVariant @relation(fields: [itemVariantId], references: [id])
+  quantity          Int
+  quantityRemaining Int // décrémenté par les retours ; détermine "actuellement en possession"
+
+  returns     Return[]
+  corrections Correction[]
+
+  @@map("distribution_lines")
+}
+
+model Return {
+  id                 String            @id @default(cuid())
+  employeeId         String
+  employee           Employee          @relation(fields: [employeeId], references: [id])
+  distributionLineId String?
+  distributionLine   DistributionLine? @relation(fields: [distributionLineId], references: [id])
+  itemVariantId      String
+  itemVariant        ItemVariant       @relation(fields: [itemVariantId], references: [id])
+  quantity           Int
+  reusable           Boolean           @default(true)
+  date               DateTime          @default(now())
+  note               String?
+  createdByUserId    String
+  createdByUser      User              @relation(fields: [createdByUserId], references: [id])
+  createdAt          DateTime          @default(now())
+
+  corrections Correction[]
+
+  @@index([employeeId])
+  @@map("returns")
+}
+
+// ---------------------------------------------------------------------------
+// Corrections (traçabilité des erreurs)
+// ---------------------------------------------------------------------------
+
+enum CorrectionTargetType {
+  DISTRIBUTION_LINE
+  RETURN
+}
+
+model Correction {
+  id                 String               @id @default(cuid())
+  targetType         CorrectionTargetType
+  distributionLineId String?
+  distributionLine   DistributionLine?    @relation(fields: [distributionLineId], references: [id])
+  returnId           String?
+  return             Return?              @relation(fields: [returnId], references: [id])
+  oldQuantity        Int
+  newQuantity        Int
+  reason             String
+  date               DateTime             @default(now())
+  createdByUserId    String
+  createdByUser      User                 @relation(fields: [createdByUserId], references: [id])
+  createdAt          DateTime             @default(now())
+
+  @@map("corrections")
+}
+
+// ---------------------------------------------------------------------------
+// Migration import (assistant de vérification)
+// ---------------------------------------------------------------------------
+
+enum MigrationStatus {
+  TO_CONFIRM
+  CONFIRMED
+  IGNORED
+}
+
+model MigrationImportItem {
+  id               String          @id @default(cuid())
+  employeeNameRaw  String
+  employeeId       String?
+  category         ItemCategory
+  size             String?
+  quantity         Int             @default(1)
+  dateRaw          DateTime?
+  status           MigrationStatus @default(TO_CONFIRM)
+  sourceRow        Json?
+  resultingDistId  String?
+  createdAt        DateTime        @default(now())
+  reviewedAt       DateTime?
+
+  @@map("migration_import_items")
+}
+
+// ---------------------------------------------------------------------------
+// Signature tactile (optionnelle)
+// ---------------------------------------------------------------------------
+
+model Signature {
+  id             String       @id @default(cuid())
+  distributionId String       @unique
+  distribution   Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
+  dataUrl        String       @db.Text
+  signedAt       DateTime     @default(now())
+
+  @@map("signatures")
+}

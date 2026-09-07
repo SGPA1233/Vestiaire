@@ -37,7 +37,7 @@ export function UploadForm() {
         rows={6}
         required
         placeholder={"prenom;nom;categorie;taille;quantite;date\nNicolas;Godeau;Chaussures;44;1;09/02/2026"}
-        className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="w-full rounded-lg border border-black/10 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100"
       />
       {message && (
         <p className={`rounded-lg px-3 py-2 text-sm ${isError ? "bg-red-50 text-red-700" : "bg-emerald-50 text-emerald-700"}`}>

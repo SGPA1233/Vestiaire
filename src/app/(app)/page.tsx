@@ -1,8 +1,18 @@
 import Link from "next/link";
 import { getDashboardData } from "@/lib/dashboard";
+import { auth } from "@/auth";
 import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { formatRelativeDate } from "@/lib/format";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
+
+const TONE_STYLES = {
+  default: { text: "text-brand-green-950", badge: "bg-brand-green-100 text-brand-green-700", icon: "👥" },
+  success: { text: "text-brand-green-700", badge: "bg-brand-green-100 text-brand-green-700", icon: "✓" },
+  warning: { text: "text-brand-gold-600", badge: "bg-brand-gold-100 text-brand-gold-600", icon: "↗" },
+  danger: { text: "text-red-700", badge: "bg-red-50 text-red-600", icon: "!" },
+} as const;
 
 function StatCard({
   label,
@@ -12,20 +22,20 @@ function StatCard({
 }: {
   label: string;
   value: number;
-  tone?: "default" | "warning" | "danger" | "success";
+  tone?: keyof typeof TONE_STYLES;
   href?: string;
 }) {
-  const toneClasses = {
-    default: "text-slate-900",
-    warning: "text-amber-600",
-    danger: "text-red-600",
-    success: "text-emerald-600",
-  };
+  const t = TONE_STYLES[tone];
 
   const content = (
-    <Card className="flex flex-col gap-1">
-      <span className="text-sm font-medium text-slate-500">{label}</span>
-      <span className={`text-3xl font-bold tabular-nums ${toneClasses[tone]}`}>{value}</span>
+    <Card className="flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-brand-green-950/60">{label}</span>
+        <span className={`flex h-7 w-7 items-center justify-center rounded-lg text-sm ${t.badge}`}>
+          {t.icon}
+        </span>
+      </div>
+      <span className={`text-3xl font-bold tabular-nums ${t.text}`}>{value}</span>
     </Card>
   );
 
@@ -40,16 +50,24 @@ function StatCard({
 }
 
 export default async function DashboardPage() {
-  const data = await getDashboardData();
+  const [data, session] = await Promise.all([getDashboardData(), auth()]);
+  const firstName = session?.user?.name?.split(" ")[0] ?? "";
+  const today = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
 
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Tableau de bord</h1>
+          <p className="text-xs font-semibold uppercase tracking-wide text-brand-green-700">
+            {today}
+          </p>
+          <h1 className="mt-1 text-2xl font-bold text-brand-green-950">
+            Bonjour{firstName ? ` ${firstName}` : ""}
+          </h1>
           {data.activeCampaign && (
-            <p className="mt-1 text-sm text-slate-500">
-              Campagne active : <span className="font-medium text-slate-700">{data.activeCampaign.name}</span>
+            <p className="mt-1 text-sm text-brand-green-950/60">
+              Campagne active :{" "}
+              <span className="font-medium text-brand-green-800">{data.activeCampaign.name}</span>
             </p>
           )}
         </div>
@@ -68,23 +86,23 @@ export default async function DashboardPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-4 text-base font-semibold text-slate-800">Dernières perceptions</h2>
+          <h2 className="mb-4 text-base font-semibold text-brand-green-950">Dernières perceptions</h2>
           {data.recentPerceptions.length === 0 ? (
-            <p className="text-sm text-slate-400">Aucune perception enregistrée pour le moment.</p>
+            <p className="text-sm text-brand-green-950/40">Aucune perception enregistrée pour le moment.</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-slate-100">
+            <ul className="flex flex-col divide-y divide-black/5">
               {data.recentPerceptions.map((p) => (
                 <li key={p.id} className="flex items-center justify-between gap-3 py-3">
                   <div className="min-w-0">
                     <Link
                       href={`/collaborateurs/${p.employee.id}`}
-                      className="font-medium text-slate-800 hover:text-blue-600"
+                      className="font-medium text-brand-green-950 hover:text-brand-green-700"
                     >
                       {p.employee.firstName} {p.employee.lastName}
                     </Link>
-                    <p className="truncate text-sm text-slate-500">{p.summary || "—"}</p>
+                    <p className="truncate text-sm text-brand-green-950/50">{p.summary || "—"}</p>
                   </div>
-                  <span className="shrink-0 text-xs text-slate-400">
+                  <span className="shrink-0 text-xs text-brand-green-950/40">
                     {formatRelativeDate(p.date)}
                   </span>
                 </li>
@@ -94,18 +112,18 @@ export default async function DashboardPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-4 text-base font-semibold text-slate-800">Collaborateurs restant à équiper</h2>
+          <h2 className="mb-4 text-base font-semibold text-brand-green-950">Collaborateurs restant à équiper</h2>
           {data.toEquipEmployees.length === 0 ? (
-            <p className="text-sm text-slate-400">Tout le monde a reçu sa dotation. 🎉</p>
+            <p className="text-sm text-brand-green-950/40">Tout le monde a reçu sa dotation. 🎉</p>
           ) : (
-            <ul className="flex flex-col divide-y divide-slate-100">
+            <ul className="flex flex-col divide-y divide-black/5">
               {data.toEquipEmployees.map((e) => (
                 <li key={e.id}>
                   <Link
                     href={`/collaborateurs/${e.id}`}
-                    className="flex items-center justify-between gap-3 py-3 hover:text-blue-600"
+                    className="flex items-center justify-between gap-3 py-3 hover:text-brand-green-700"
                   >
-                    <span className="font-medium text-slate-800">
+                    <span className="font-medium text-brand-green-950">
                       {e.firstName} {e.lastName}
                     </span>
                     <span className="text-sm text-red-600">À équiper →</span>

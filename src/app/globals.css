@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f8fafc;
-  --foreground: #0f172a;
+  --background: #f6f2e7;
+  --foreground: #1c2620;
+
+  /* Vert forêt (sidebar, actions principales) */
+  --brand-green-950: #142720;
+  --brand-green-900: #1a3229;
+  --brand-green-800: #204233;
+  --brand-green-700: #2a5744;
+  --brand-green-600: #356c54;
+  --brand-green-100: #e3ece6;
+
+  /* Doré (accent, logo, mise en avant) */
+  --brand-gold-600: #a9812a;
+  --brand-gold-500: #c49a3a;
+  --brand-gold-400: #d6b25a;
+  --brand-gold-100: #f4e9cf;
+
+  /* Fond crème */
+  --cream-50: #f6f2e7;
+  --cream-100: #efe8d6;
 }
 
 @theme inline {
@@ -10,6 +28,21 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --color-brand-green-950: var(--brand-green-950);
+  --color-brand-green-900: var(--brand-green-900);
+  --color-brand-green-800: var(--brand-green-800);
+  --color-brand-green-700: var(--brand-green-700);
+  --color-brand-green-600: var(--brand-green-600);
+  --color-brand-green-100: var(--brand-green-100);
+
+  --color-brand-gold-600: var(--brand-gold-600);
+  --color-brand-gold-500: var(--brand-gold-500);
+  --color-brand-gold-400: var(--brand-gold-400);
+  --color-brand-gold-100: var(--brand-gold-100);
+
+  --color-cream-50: var(--cream-50);
+  --color-cream-100: var(--cream-100);
 }
 
 body {

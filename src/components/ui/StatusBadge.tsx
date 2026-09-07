@@ -4,8 +4,8 @@ import { StockStatus } from "@/lib/stock";
 
 const dotationColors: Record<DotationStatus, string> = {
   A_EQUIPER: "bg-red-50 text-red-700 ring-1 ring-red-200",
-  PARTIEL: "bg-orange-50 text-orange-700 ring-1 ring-orange-200",
-  EQUIPE: "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200",
+  PARTIEL: "bg-brand-gold-100 text-brand-gold-600 ring-1 ring-brand-gold-400/40",
+  EQUIPE: "bg-brand-green-100 text-brand-green-700 ring-1 ring-brand-green-600/20",
 };
 
 export function DotationStatusBadge({ status }: { status: DotationStatus }) {
@@ -19,8 +19,8 @@ export function DotationStatusBadge({ status }: { status: DotationStatus }) {
       <span
         className={clsx("h-1.5 w-1.5 rounded-full", {
           "bg-red-500": status === "A_EQUIPER",
-          "bg-orange-500": status === "PARTIEL",
-          "bg-emerald-500": status === "EQUIPE",
+          "bg-brand-gold-500": status === "PARTIEL",
+          "bg-brand-green-600": status === "EQUIPE",
         })}
       />
       {STATUS_LABELS[status]}

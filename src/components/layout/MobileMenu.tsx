@@ -21,12 +21,12 @@ export function MobileMenu() {
             className="fixed inset-0 bg-black/30"
             onClick={() => setOpen(false)}
           />
-          <div className="relative flex w-72 flex-col gap-6 bg-white p-5 shadow-xl">
+          <div className="relative flex w-72 flex-col gap-6 bg-brand-green-950 p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <span className="text-lg font-semibold">Menu</span>
+              <span className="text-lg font-semibold text-white">Menu</span>
               <button
                 onClick={() => setOpen(false)}
-                className="flex h-9 w-9 items-center justify-center rounded-lg text-slate-500 hover:bg-slate-100"
+                className="flex h-9 w-9 items-center justify-center rounded-lg text-brand-green-100/70 hover:bg-white/10"
                 aria-label="Fermer le menu"
               >
                 ✕

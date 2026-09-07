@@ -3,20 +3,30 @@ import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
+const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
+const PANTS_SIZES = ["34", "36", "38", "40", "42", "44", "46", "48", "50"];
+const SHOE_SIZES = ["38", "39", "40", "41", "42", "43", "44", "45", "46"];
+
 const ITEM_CATALOG: {
+  slug: string;
   name: string;
   category: ItemCategory;
   sizes: string[];
   threshold: number;
+  stockPerSize: number;
 }[] = [
-  { name: "T-shirt opérationnel 2026", category: "TSHIRT", sizes: ["XS", "S", "M", "L", "XL", "XXL"], threshold: 5 },
-  { name: "Polo opérationnel 2026", category: "POLO", sizes: ["XS", "S", "M", "L", "XL", "XXL"], threshold: 5 },
-  { name: "Sweatshirt opérationnel 2026", category: "SWEATSHIRT", sizes: ["XS", "S", "M", "L", "XL", "XXL"], threshold: 5 },
-  { name: "Veste opérationnelle 2026", category: "VESTE", sizes: ["XS", "S", "M", "L", "XL", "XXL"], threshold: 5 },
-  { name: "Pantalon opérationnel 2026", category: "PANTALON", sizes: ["34", "36", "38", "40", "42", "44", "46", "48", "50"], threshold: 5 },
-  { name: "Chaussures de sécurité 2026", category: "CHAUSSURES", sizes: ["38", "39", "40", "41", "42", "43", "44", "45", "46"], threshold: 3 },
-  { name: "Bottes de sécurité 2026", category: "BOTTES", sizes: ["38", "39", "40", "41", "42", "43", "44", "45", "46"], threshold: 3 },
-  { name: "Casquette opérationnelle 2026", category: "CASQUETTE", sizes: ["Unique"], threshold: 5 },
+  { slug: "tshirt-coton", name: "T-shirt coton", category: "TSHIRT", sizes: CLOTHING_SIZES, threshold: 5, stockPerSize: 18 },
+  { slug: "tshirt-synthetique", name: "T-shirt synthétique", category: "TSHIRT", sizes: CLOTHING_SIZES, threshold: 5, stockPerSize: 12 },
+  { slug: "polo", name: "Polo", category: "POLO", sizes: CLOTHING_SIZES, threshold: 5, stockPerSize: 14 },
+  { slug: "sweat-capuche", name: "Sweat à capuche", category: "SWEATSHIRT", sizes: CLOTHING_SIZES, threshold: 5, stockPerSize: 10 },
+  { slug: "veste-travail", name: "Veste de travail", category: "VESTE", sizes: CLOTHING_SIZES, threshold: 4, stockPerSize: 9 },
+  { slug: "veste-pluie", name: "Veste de pluie", category: "VESTE", sizes: CLOTHING_SIZES, threshold: 4, stockPerSize: 6 },
+  { slug: "pantalon", name: "Pantalon", category: "PANTALON", sizes: PANTS_SIZES, threshold: 5, stockPerSize: 16 },
+  { slug: "short", name: "Short", category: "SHORT", sizes: PANTS_SIZES, threshold: 3, stockPerSize: 8 },
+  { slug: "chaussures-basses", name: "Chaussures basses", category: "CHAUSSURES", sizes: SHOE_SIZES, threshold: 3, stockPerSize: 11 },
+  { slug: "chaussures-hautes", name: "Chaussures hautes", category: "CHAUSSURES", sizes: SHOE_SIZES, threshold: 3, stockPerSize: 7 },
+  { slug: "bottes", name: "Bottes", category: "BOTTES", sizes: SHOE_SIZES, threshold: 3, stockPerSize: 5 },
+  { slug: "casquette", name: "Casquette", category: "CASQUETTE", sizes: ["Unique"], threshold: 5, stockPerSize: 25 },
 ];
 
 const DEMO_EMPLOYEES = [
@@ -64,10 +74,10 @@ async function main() {
 
   for (const entry of ITEM_CATALOG) {
     const item = await prisma.item.upsert({
-      where: { id: `seed-${entry.category}` },
+      where: { id: `seed-${entry.slug}` },
       update: {},
       create: {
-        id: `seed-${entry.category}`,
+        id: `seed-${entry.slug}`,
         name: entry.name,
         category: entry.category,
         active: true,
@@ -90,10 +100,10 @@ async function main() {
           data: {
             itemVariantId: variant.id,
             type: "RECEPTION",
-            quantity: 20,
+            quantity: entry.stockPerSize,
             supplier: "Fournisseur démo",
             orderReference: "CMD-2026-001",
-            note: "Stock initial (données de démonstration)",
+            note: "Stock initial (données de démonstration — à vider avant la mise en production réelle)",
             createdByUserId: admin.id,
           },
         });

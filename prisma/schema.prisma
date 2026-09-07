@@ -7,8 +7,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL") // connexion "pooled" (via PgBouncer sur Supabase)
+  directUrl = env("DIRECT_URL") // connexion directe, utilisée pour les migrations
 }
 
 // ---------------------------------------------------------------------------
@@ -74,10 +75,12 @@ model AuditLog {
 
 enum ItemCategory {
   TSHIRT
+  DEBARDEUR
   POLO
   SWEATSHIRT
   VESTE
   PANTALON
+  SHORT
   CHAUSSURES
   BOTTES
   CASQUETTE

@@ -21,11 +21,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+    <div className="flex min-h-screen items-center justify-center bg-brand-green-950 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-bold text-slate-900">Mot de passe oublié</h1>
-          <p className="mt-1 text-sm text-slate-500">
+          <h1 className="text-2xl font-bold text-white">Mot de passe oublié</h1>
+          <p className="mt-1 text-sm text-brand-green-100/70">
             Indiquez votre adresse email professionnelle.
           </p>
         </div>
@@ -33,23 +33,23 @@ export default function ForgotPasswordPage() {
           {result ? (
             <div className="flex flex-col gap-4 text-sm">
               {result.emailed ? (
-                <p className="text-slate-700">
+                <p className="text-brand-green-950/80">
                   Si un compte existe avec cette adresse, un email de réinitialisation vient
                   d&apos;être envoyé.
                 </p>
               ) : (
                 <>
-                  <p className="text-slate-700">
+                  <p className="text-brand-green-950/80">
                     Aucun serveur email n&apos;est configuré (ou l&apos;adresse est inconnue).
                     Un administrateur peut utiliser ce lien pour réinitialiser le mot de
                     passe :
                   </p>
-                  <p className="break-all rounded-lg bg-slate-100 px-3 py-2 font-mono text-xs">
+                  <p className="break-all rounded-lg bg-cream-100 px-3 py-2 font-mono text-xs">
                     {result.resetUrl}
                   </p>
                 </>
               )}
-              <Link href="/login" className="text-center text-blue-600 hover:underline">
+              <Link href="/login" className="text-center text-brand-green-700 hover:underline">
                 Retour à la connexion
               </Link>
             </div>
@@ -68,7 +68,7 @@ export default function ForgotPasswordPage() {
               <Button type="submit" disabled={loading} className="w-full">
                 {loading ? "Envoi..." : "Envoyer le lien de réinitialisation"}
               </Button>
-              <Link href="/login" className="text-center text-sm text-slate-500 hover:text-slate-700">
+              <Link href="/login" className="text-center text-sm text-brand-green-950/50 hover:text-brand-green-800">
                 Retour à la connexion
               </Link>
             </form>

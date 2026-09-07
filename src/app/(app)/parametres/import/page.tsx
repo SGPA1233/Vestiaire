@@ -52,7 +52,7 @@ export default async function ImportPage() {
         <p className="text-sm text-slate-500">
           Ces équipements récents doivent être repris comme actifs sans passer par l&apos;ancien
           historique. Utilisez l&apos;assistant dédié :{" "}
-          <a href="/parametres/migration" className="text-blue-600 hover:underline">
+          <a href="/parametres/migration" className="text-brand-green-700 hover:underline">
             Migration ancien système
           </a>
           .

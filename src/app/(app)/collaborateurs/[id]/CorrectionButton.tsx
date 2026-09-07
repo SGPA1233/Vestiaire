@@ -46,7 +46,7 @@ export function CorrectionButton({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="text-xs text-slate-400 hover:text-blue-600"
+        className="text-xs text-brand-green-950/40 hover:text-brand-green-700"
       >
         Corriger
       </button>

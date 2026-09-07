@@ -36,7 +36,7 @@ export function EmployeeImportWizard() {
         value={text}
         onChange={(e) => setText(e.target.value)}
         placeholder={"prenom;nom;actif;operationnel;tshirt;veste;pantalon;chaussures\nChloé;Padé;oui;oui;S;S;34;39"}
-        className="w-full rounded-lg border border-slate-300 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+        className="w-full rounded-lg border border-black/10 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100"
       />
       <div>
         <Button type="button" variant="secondary" onClick={handlePreview} disabled={isPending || !text.trim()}>

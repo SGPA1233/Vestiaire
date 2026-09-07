@@ -5,7 +5,7 @@ export function Input(props: React.InputHTMLAttributes<HTMLInputElement>) {
     <input
       {...props}
       className={clsx(
-        "w-full rounded-lg border border-slate-300 px-3.5 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
+        "w-full rounded-lg border border-black/10 px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100",
         props.className
       )}
     />
@@ -17,7 +17,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
     <select
       {...props}
       className={clsx(
-        "w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100",
+        "w-full rounded-lg border border-black/10 bg-white px-3.5 py-2.5 text-sm outline-none transition focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100",
         props.className
       )}
     />
@@ -26,7 +26,7 @@ export function Select(props: React.SelectHTMLAttributes<HTMLSelectElement>) {
 
 export function Label({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) {
   return (
-    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-slate-700">
+    <label htmlFor={htmlFor} className="mb-1.5 block text-sm font-medium text-brand-green-950/80">
       {children}
     </label>
   );
@@ -38,7 +38,7 @@ export function Checkbox(props: React.InputHTMLAttributes<HTMLInputElement>) {
       type="checkbox"
       {...props}
       className={clsx(
-        "h-5 w-5 rounded border-slate-300 text-blue-600 focus:ring-blue-500",
+        "h-5 w-5 rounded border-black/20 text-brand-green-700 focus:ring-brand-green-600",
         props.className
       )}
     />

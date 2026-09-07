@@ -3,11 +3,12 @@ import Link from "next/link";
 import clsx from "clsx";
 
 const variants = {
-  primary: "bg-blue-600 text-white hover:bg-blue-700 disabled:bg-blue-300",
-  secondary: "bg-white text-slate-700 border border-slate-300 hover:bg-slate-50",
-  danger: "bg-red-600 text-white hover:bg-red-700 disabled:bg-red-300",
-  ghost: "bg-transparent text-slate-600 hover:bg-slate-100",
-  success: "bg-emerald-600 text-white hover:bg-emerald-700 disabled:bg-emerald-300",
+  primary: "bg-brand-green-800 text-white hover:bg-brand-green-700 disabled:bg-brand-green-100 disabled:text-brand-green-600",
+  secondary: "bg-white text-brand-green-900 border border-black/10 hover:bg-cream-100",
+  danger: "bg-red-700 text-white hover:bg-red-800 disabled:bg-red-300",
+  ghost: "bg-transparent text-brand-green-700 hover:bg-brand-green-100",
+  success: "bg-brand-green-700 text-white hover:bg-brand-green-600 disabled:bg-brand-green-100",
+  gold: "bg-brand-gold-500 text-brand-green-950 hover:bg-brand-gold-400 disabled:bg-brand-gold-100",
 };
 
 const sizes = {

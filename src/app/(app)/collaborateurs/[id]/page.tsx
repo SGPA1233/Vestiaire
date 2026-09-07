@@ -25,6 +25,13 @@ export default async function CollaborateurDetailPage({
 
   return (
     <div className="flex flex-col gap-6">
+      <Link
+        href="/collaborateurs"
+        className="text-sm text-brand-green-950/50 hover:text-brand-green-800"
+      >
+        ← Retour à la liste des collaborateurs
+      </Link>
+
       <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <div className="flex items-center gap-3">
@@ -155,19 +162,15 @@ export default async function CollaborateurDetailPage({
           </div>
         )}
       </Card>
-
-      <Link href="/collaborateurs" className="text-sm text-slate-500 hover:text-slate-700">
-        ← Retour à la liste des collaborateurs
-      </Link>
     </div>
   );
 }
 
 function ActionPill({ type }: { type: "Distribution" | "Retour" | "Correction" }) {
   const colors = {
-    Distribution: "bg-blue-50 text-blue-700",
-    Retour: "bg-slate-100 text-slate-600",
-    Correction: "bg-amber-50 text-amber-700",
+    Distribution: "bg-brand-green-100 text-brand-green-700",
+    Retour: "bg-cream-100 text-brand-green-950/60",
+    Correction: "bg-brand-gold-100 text-brand-gold-600",
   };
   return (
     <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${colors[type]}`}>

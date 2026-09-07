@@ -27,10 +27,10 @@ export function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={link.href}
             onClick={onNavigate}
             className={clsx(
-              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors",
+              "flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-colors border-l-2",
               active
-                ? "bg-blue-600 text-white"
-                : "text-slate-600 hover:bg-slate-100"
+                ? "bg-white/10 border-brand-gold-500 text-white"
+                : "border-transparent text-brand-green-100/70 hover:bg-white/5 hover:text-white"
             )}
           >
             <span className="text-base">{link.icon}</span>

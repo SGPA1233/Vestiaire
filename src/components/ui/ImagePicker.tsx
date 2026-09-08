@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/Field";
 
 const MAX_SIZE = 320;
@@ -41,7 +41,22 @@ export function ImagePicker({
 }) {
   const [preview, setPreview] = useState<string | null>(defaultValue ?? null);
   const [error, setError] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [menuOpen]);
 
   async function handleFile(file: File | undefined) {
     setError(null);
@@ -63,37 +78,81 @@ export function ImagePicker({
     <div>
       <Label>{label}</Label>
       <input ref={inputRef} type="hidden" name={name} defaultValue={defaultValue ?? ""} />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={(e) => handleFile(e.target.files?.[0])}
+        className="hidden"
+      />
       <div className="flex items-center gap-4">
-        <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-cream-100">
-          {preview ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={preview} alt="" className="h-full w-full object-cover" />
-          ) : (
-            <span className="text-2xl text-brand-green-950/20">📦</span>
-          )}
-        </div>
-        <div className="flex flex-col gap-2">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handleFile(e.target.files?.[0])}
-            className="text-sm text-brand-green-950/70 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-green-100 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-brand-green-800"
-          />
-          {preview && (
+        <div className="relative h-20 w-20 shrink-0">
+          <button
+            type="button"
+            onClick={() => (preview ? setLightboxOpen(true) : fileInputRef.current?.click())}
+            className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-xl border border-black/10 bg-cream-100"
+          >
+            {preview ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={preview} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-2xl text-brand-green-950/20">📦</span>
+            )}
+          </button>
+          <div ref={menuRef} className="absolute -right-2 -top-2">
             <button
               type="button"
-              onClick={() => {
-                setPreview(null);
-                if (inputRef.current) inputRef.current.value = "";
-              }}
-              className="self-start text-xs text-red-600 hover:underline"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Réglages de la photo"
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-sm shadow-sm hover:bg-cream-100"
             >
-              Retirer la photo
+              ⚙️
             </button>
-          )}
-          {error && <p className="text-xs text-red-600">{error}</p>}
+            {menuOpen && (
+              <div className="absolute right-0 top-8 z-10 w-44 overflow-hidden rounded-lg border border-black/10 bg-white py-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMenuOpen(false);
+                    fileInputRef.current?.click();
+                  }}
+                  className="block w-full px-3 py-2 text-left text-xs text-brand-green-950/80 hover:bg-cream-100"
+                >
+                  Choisir un fichier
+                </button>
+                {preview && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false);
+                      setPreview(null);
+                      if (inputRef.current) inputRef.current.value = "";
+                    }}
+                    className="block w-full px-3 py-2 text-left text-xs text-red-600 hover:bg-cream-100"
+                  >
+                    Retirer la photo
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
         </div>
+        {error && <p className="text-xs text-red-600">{error}</p>}
       </div>
+
+      {lightboxOpen && preview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-6"
+          onClick={() => setLightboxOpen(false)}
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={preview}
+            alt=""
+            className="max-h-[80vh] max-w-[90vw] rounded-lg object-contain shadow-2xl"
+          />
+        </div>
+      )}
     </div>
   );
 }

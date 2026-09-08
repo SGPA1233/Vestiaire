@@ -26,6 +26,11 @@ export function EmployeeListClient({ employees }: { employees: EmployeeWithStatu
         onChange={(e) => setQuery(e.target.value)}
         className="max-w-md"
         autoFocus
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        data-1p-ignore
+        data-lpignore="true"
       />
 
       <Card className="p-0">

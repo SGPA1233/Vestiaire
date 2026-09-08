@@ -41,6 +41,11 @@ export function StockListClient({ rows }: { rows: Row[] }) {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           className="max-w-xs"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          data-1p-ignore
+          data-lpignore="true"
         />
         <Select
           value={statusFilter}

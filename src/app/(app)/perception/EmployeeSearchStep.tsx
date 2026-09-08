@@ -28,6 +28,11 @@ export function EmployeeSearchStep({ employees }: { employees: EmployeeWithStatu
         onChange={(e) => setQuery(e.target.value)}
         className="max-w-md text-base"
         autoFocus
+        autoComplete="off"
+        autoCorrect="off"
+        spellCheck={false}
+        data-1p-ignore
+        data-lpignore="true"
       />
 
       <Card className="p-0">

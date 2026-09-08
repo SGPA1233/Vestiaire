@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Label } from "@/components/ui/Field";
 
-const MAX_SIZE = 320;
+const MAX_SIZE = 1000;
 
 function resizeImage(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -20,7 +20,7 @@ function resizeImage(file: File): Promise<string> {
         const ctx = canvas.getContext("2d");
         if (!ctx) return reject(new Error("Canvas non supporté"));
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
       };
       img.onerror = () => reject(new Error("Image invalide"));
       img.src = reader.result as string;
@@ -99,17 +99,17 @@ export function ImagePicker({
               <span className="text-2xl text-brand-green-950/20">📦</span>
             )}
           </button>
-          <div ref={menuRef} className="absolute -right-2 -top-2">
+          <div ref={menuRef} className="absolute bottom-1 right-1">
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Réglages de la photo"
-              className="flex h-7 w-7 items-center justify-center rounded-full border border-black/10 bg-white text-sm shadow-sm hover:bg-cream-100"
+              className="flex h-6 w-6 items-center justify-center rounded-full border border-black/10 bg-white/95 text-xs shadow-sm hover:bg-white"
             >
               ⚙️
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-8 z-10 w-44 overflow-hidden rounded-lg border border-black/10 bg-white py-1 shadow-lg">
+              <div className="absolute bottom-7 right-0 z-10 w-44 overflow-hidden rounded-lg border border-black/10 bg-white py-1 shadow-lg">
                 <button
                   type="button"
                   onClick={() => {

@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { getActiveCampaign } from "@/lib/status";
 import { getCurrentlyHeldLines } from "@/lib/employee";
+import { REQUIRED_CATEGORIES_FOR_EQUIPPED } from "@/lib/config";
+import type { ItemCategory } from "@prisma/client";
 
 export interface TimelineEvent {
   id: string;
@@ -62,9 +64,16 @@ export async function getEmployeeDetail(employeeId: string) {
             itemName: l.itemVariant.item.name,
             size: l.itemVariant.size,
             quantity: l.quantity,
+            category: l.itemVariant.item.category,
           }))
         )
     : [];
+
+  const receivedCategories = new Set(newCampaignLines.map((l) => l.category));
+  const missingCategories: ItemCategory[] =
+    activeCampaign && newCampaignLines.length > 0
+      ? REQUIRED_CATEGORIES_FOR_EQUIPPED.filter((c) => !receivedCategories.has(c))
+      : [];
 
   const timeline: TimelineEvent[] = [];
 
@@ -113,6 +122,7 @@ export async function getEmployeeDetail(employeeId: string) {
     activeCampaign,
     currentlyHeld,
     newCampaignLines,
+    missingCategories,
     timeline,
   };
 }

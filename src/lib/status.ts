@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { REQUIRED_CATEGORIES_FOR_EQUIPPED } from "@/lib/config";
+import type { ItemCategory } from "@prisma/client";
 
 export type DotationStatus = "A_EQUIPER" | "PARTIEL" | "EQUIPE";
 
@@ -66,4 +67,69 @@ export async function getEmployeeStatusMap(
   }
 
   return map;
+}
+
+export interface EquipmentGap {
+  employeeId: string;
+  firstName: string;
+  lastName: string;
+  missing: { category: ItemCategory; size: string | null }[];
+}
+
+/**
+ * Liste, pour la campagne active, les collaborateurs actifs ayant reçu au
+ * moins un article mais à qui il manque encore une catégorie requise —
+ * avec la taille habituelle à commander pour chaque article manquant.
+ */
+export async function getEquipmentGaps(): Promise<EquipmentGap[]> {
+  const activeCampaign = await getActiveCampaign();
+  if (!activeCampaign) return [];
+
+  const employees = await prisma.employee.findMany({
+    where: { active: true },
+    include: { sizes: true },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+
+  const lines = await prisma.distributionLine.findMany({
+    where: {
+      distribution: {
+        employeeId: { in: employees.map((e) => e.id) },
+        campaignId: activeCampaign.id,
+      },
+    },
+    include: {
+      distribution: { select: { employeeId: true } },
+      itemVariant: { include: { item: true } },
+    },
+  });
+
+  const categoriesByEmployee = new Map<string, Set<ItemCategory>>();
+  for (const line of lines) {
+    const empId = line.distribution.employeeId;
+    if (!categoriesByEmployee.has(empId)) categoriesByEmployee.set(empId, new Set());
+    categoriesByEmployee.get(empId)!.add(line.itemVariant.item.category);
+  }
+
+  const gaps: EquipmentGap[] = [];
+  for (const employee of employees) {
+    const received = categoriesByEmployee.get(employee.id);
+    if (!received || received.size === 0) continue; // rien reçu = pas encore traité
+
+    const missingCategories = REQUIRED_CATEGORIES_FOR_EQUIPPED.filter((c) => !received.has(c));
+    if (missingCategories.length === 0) continue; // équipé
+
+    const sizeMap = Object.fromEntries(employee.sizes.map((s) => [s.category, s.size]));
+    gaps.push({
+      employeeId: employee.id,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      missing: missingCategories.map((category) => ({
+        category,
+        size: sizeMap[category] ?? null,
+      })),
+    });
+  }
+
+  return gaps;
 }

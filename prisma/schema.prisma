@@ -131,6 +131,7 @@ model Item {
   imageUrl       String?      @db.Text
   active         Boolean      @default(true)
   stockThreshold Int          @default(5)
+  displayOrder   Int          @default(0)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 

@@ -4,12 +4,14 @@ import { Card } from "@/components/ui/Card";
 import { LinkButton } from "@/components/ui/Button";
 import { Pill } from "@/components/ui/StatusBadge";
 import { ItemThumbnail } from "@/components/ui/ItemThumbnail";
-import { CATEGORY_LABELS, CATEGORY_ORDER } from "@/lib/config";
+import { CATEGORY_LABELS } from "@/lib/config";
 import { sortSizes } from "@/lib/sizes";
 
 export default async function ArticlesPage() {
-  const items = await prisma.item.findMany({ include: { variants: true } });
-  items.sort((a, b) => CATEGORY_ORDER.indexOf(a.category) - CATEGORY_ORDER.indexOf(b.category));
+  const items = await prisma.item.findMany({
+    include: { variants: true },
+    orderBy: { displayOrder: "asc" },
+  });
 
   return (
     <div className="flex flex-col gap-6">

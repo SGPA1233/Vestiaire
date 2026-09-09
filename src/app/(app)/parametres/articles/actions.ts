@@ -49,6 +49,8 @@ export async function createItem(formData: FormData) {
 
   const sizes = parseSizes(parsed.sizes);
 
+  const maxOrder = await prisma.item.aggregate({ _max: { displayOrder: true } });
+
   const item = await prisma.item.create({
     data: {
       name: parsed.name,
@@ -59,6 +61,7 @@ export async function createItem(formData: FormData) {
       imageUrl: parsed.imageUrl || undefined,
       stockThreshold: parsed.stockThreshold,
       active: parsed.active,
+      displayOrder: (maxOrder._max.displayOrder ?? 0) + 1,
       variants: { create: sizes.map((size) => ({ size, active: true })) },
     },
   });

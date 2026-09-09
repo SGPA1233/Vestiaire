@@ -49,7 +49,6 @@ export const REQUIRED_CATEGORIES_FOR_EQUIPPED: ItemCategory[] = [
   "TSHIRT",
   "VESTE",
   "PANTALON",
-  "CHAUSSURES",
 ];
 
 const PANT_SIZES = Array.from({ length: 60 - 34 + 1 }, (_, i) => String(34 + i));

@@ -16,6 +16,7 @@ import type { ItemCategory } from "@prisma/client";
 
 interface CurrentlyHeldItem {
   id: string;
+  itemId: string;
   itemName: string;
   size: string;
   quantityRemaining: number;
@@ -49,6 +50,7 @@ export function PerceptionFlow({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [gapsAcknowledged, setGapsAcknowledged] = useState(false);
   const [successId, setSuccessId] = useState<string | null>(null);
 
   const [lines, setLines] = useState<Record<string, LineState>>(() => {
@@ -109,6 +111,16 @@ export function PerceptionFlow({
   }, [catalog, lines, currentlyHeld, returns]);
 
   const hasAnything = summary.distributed.length > 0 || summary.recovered.length > 0;
+
+  const heldItemIds = useMemo(() => new Set(currentlyHeld.map((l) => l.itemId)), [currentlyHeld]);
+  const notSelected = useMemo(
+    () =>
+      catalog.filter((item) => {
+        const line = lines[item.id];
+        return (!line || line.quantity <= 0) && !heldItemIds.has(item.id);
+      }),
+    [catalog, lines, heldItemIds]
+  );
 
   async function handleConfirm() {
     setError(null);
@@ -284,7 +296,10 @@ export function PerceptionFlow({
           <Button
             size="lg"
             disabled={!hasAnything || isPending}
-            onClick={() => setConfirmOpen(true)}
+            onClick={() => {
+              setGapsAcknowledged(false);
+              setConfirmOpen(true);
+            }}
           >
             Valider la perception
           </Button>
@@ -317,11 +332,33 @@ export function PerceptionFlow({
               </ul>
             </div>
           )}
+          {notSelected.length > 0 && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+              <p className="mb-1 font-medium text-amber-800">
+                Articles non sélectionnés (quantité à 0) :
+              </p>
+              <ul className="list-inside list-disc text-amber-700">
+                {notSelected.map((item) => (
+                  <li key={item.id}>{item.name}</li>
+                ))}
+              </ul>
+              <label className="mt-3 flex items-center gap-2 text-amber-800">
+                <Checkbox
+                  checked={gapsAcknowledged}
+                  onChange={(e) => setGapsAcknowledged(e.target.checked)}
+                />
+                C&apos;est normal, je confirme volontairement
+              </label>
+            </div>
+          )}
           <div className="mt-2 flex justify-end gap-3">
             <Button variant="secondary" onClick={() => setConfirmOpen(false)} disabled={isPending}>
               Annuler
             </Button>
-            <Button onClick={handleConfirm} disabled={isPending}>
+            <Button
+              onClick={handleConfirm}
+              disabled={isPending || (notSelected.length > 0 && !gapsAcknowledged)}
+            >
               {isPending ? "Enregistrement..." : "Confirmer"}
             </Button>
           </div>

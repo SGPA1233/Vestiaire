@@ -82,6 +82,7 @@ export default async function PerceptionPage({
       catalog={catalog}
       currentlyHeld={currentlyHeld.map((l) => ({
         id: l.id,
+        itemId: l.itemVariant.itemId,
         itemName: l.itemVariant.item.name,
         size: l.itemVariant.size,
         quantityRemaining: l.quantityRemaining,

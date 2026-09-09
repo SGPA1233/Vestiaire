@@ -215,7 +215,6 @@ export function PerceptionFlow({
                   <QuantityStepper
                     value={line.quantity}
                     onChange={(v) => setLineQuantity(item.id, v)}
-                    max={stock}
                   />
                 </div>
               </div>

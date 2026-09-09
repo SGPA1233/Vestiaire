@@ -42,6 +42,9 @@ export async function submitPerception(
       lines: parsed.lines,
       returns: parsed.returns,
       note: parsed.note,
+      // Le stock calculé n'est pas encore fiable (import fournisseur en attente) :
+      // ne pas bloquer les perceptions dessus tant que ce n'est pas rétabli.
+      force: true,
     });
 
     revalidatePath("/");

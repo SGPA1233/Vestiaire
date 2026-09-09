@@ -19,7 +19,7 @@ export default async function CollaborateurDetailPage({
 
   if (!detail) notFound();
 
-  const { employee, activeCampaign, currentlyHeld, newCampaignLines, missingCategories, timeline } =
+  const { employee, activeCampaign, currentlyHeld, newCampaignLines, missingItems, timeline } =
     detail;
   const isAdmin = session?.user?.role === "ADMIN";
   const sizeMap = Object.fromEntries(employee.sizes.map((s) => [s.category, s.size]));
@@ -58,17 +58,17 @@ export default async function CollaborateurDetailPage({
         </div>
       </div>
 
-      {missingCategories.length > 0 && (
+      {missingItems.length > 0 && (
         <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
           <p className="text-sm font-semibold text-red-700">Il manque pour être équipé :</p>
           <ul className="mt-2 flex flex-wrap gap-2">
-            {missingCategories.map((cat) => (
+            {missingItems.map((m) => (
               <li
-                key={cat}
+                key={m.itemId}
                 className="rounded-full border border-red-300 bg-white px-3 py-1 text-xs font-medium text-red-700"
               >
-                {CATEGORY_LABELS[cat]}
-                {sizeMap[cat] ? ` — taille ${sizeMap[cat]}` : " — taille non renseignée"}
+                {m.itemName}
+                {m.size ? ` — taille ${m.size}` : " — taille non renseignée"}
               </li>
             ))}
           </ul>

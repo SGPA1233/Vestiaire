@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { getEquipmentGaps } from "@/lib/status";
 import { Card } from "@/components/ui/Card";
-import { CATEGORY_LABELS } from "@/lib/config";
 
 export default async function ManquesPage() {
   const gaps = await getEquipmentGaps();
@@ -43,10 +42,10 @@ export default async function ManquesPage() {
                 <div className="flex flex-wrap gap-2">
                   {gap.missing.map((m) => (
                     <span
-                      key={m.category}
+                      key={m.itemId}
                       className="rounded-full border border-red-300 bg-red-50 px-3 py-1 text-xs font-medium text-red-700"
                     >
-                      {CATEGORY_LABELS[m.category]}
+                      {m.itemName}
                       {m.size ? ` — taille ${m.size}` : " — taille non renseignée"}
                     </span>
                   ))}

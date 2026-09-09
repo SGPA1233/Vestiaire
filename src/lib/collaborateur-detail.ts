@@ -1,8 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { getActiveCampaign } from "@/lib/status";
+import { getActiveCampaign, getRequiredItems } from "@/lib/status";
 import { getCurrentlyHeldLines } from "@/lib/employee";
-import { REQUIRED_CATEGORIES_FOR_EQUIPPED } from "@/lib/config";
-import type { ItemCategory } from "@prisma/client";
+
+export interface MissingItem {
+  itemId: string;
+  itemName: string;
+  category: string;
+  size: string | null;
+}
 
 export interface TimelineEvent {
   id: string;
@@ -22,7 +27,10 @@ export async function getEmployeeDetail(employeeId: string) {
   });
   if (!employee) return null;
 
-  const activeCampaign = await getActiveCampaign();
+  const [activeCampaign, requiredItems] = await Promise.all([
+    getActiveCampaign(),
+    getRequiredItems(),
+  ]);
 
   const [currentlyHeld, distributions, returns, corrections] = await Promise.all([
     getCurrentlyHeldLines(employeeId),
@@ -64,15 +72,23 @@ export async function getEmployeeDetail(employeeId: string) {
             itemName: l.itemVariant.item.name,
             size: l.itemVariant.size,
             quantity: l.quantity,
-            category: l.itemVariant.item.category,
+            itemId: l.itemVariant.itemId,
           }))
         )
     : [];
 
-  const receivedCategories = new Set(newCampaignLines.map((l) => l.category));
-  const missingCategories: ItemCategory[] =
+  const receivedItemIds = new Set(newCampaignLines.map((l) => l.itemId));
+  const sizeMap = Object.fromEntries(employee.sizes.map((s) => [s.category, s.size]));
+  const missingItems: MissingItem[] =
     activeCampaign && newCampaignLines.length > 0
-      ? REQUIRED_CATEGORIES_FOR_EQUIPPED.filter((c) => !receivedCategories.has(c))
+      ? requiredItems
+          .filter((item) => !receivedItemIds.has(item.id))
+          .map((item) => ({
+            itemId: item.id,
+            itemName: item.name,
+            category: item.category,
+            size: sizeMap[item.category] ?? null,
+          }))
       : [];
 
   const timeline: TimelineEvent[] = [];
@@ -122,7 +138,7 @@ export async function getEmployeeDetail(employeeId: string) {
     activeCampaign,
     currentlyHeld,
     newCampaignLines,
-    missingCategories,
+    missingItems,
     timeline,
   };
 }

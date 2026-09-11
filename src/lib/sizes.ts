@@ -1,12 +1,16 @@
 const CLOTHING_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "XXXL", "Unique"];
 
 export function compareSizes(a: string, b: string): number {
-  const na = Number(a);
-  const nb = Number(b);
-  const aIsNum = a.trim() !== "" && !Number.isNaN(na);
-  const bIsNum = b.trim() !== "" && !Number.isNaN(nb);
+  // Nombre pur ("42") ou nombre préfixé (taille allemande "C42") : on compare
+  // sur la partie numérique pour trier logiquement plutôt qu'alphabétiquement.
+  const ma = a.match(/\d+/);
+  const mb = b.match(/\d+/);
+  const na = ma ? Number(ma[0]) : NaN;
+  const nb = mb ? Number(mb[0]) : NaN;
+  const aIsNum = ma !== null;
+  const bIsNum = mb !== null;
 
-  if (aIsNum && bIsNum) return na - nb;
+  if (aIsNum && bIsNum && na !== nb) return na - nb;
   if (aIsNum !== bIsNum) return aIsNum ? -1 : 1;
 
   const ia = CLOTHING_ORDER.indexOf(a.toUpperCase());

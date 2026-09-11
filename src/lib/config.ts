@@ -52,7 +52,9 @@ export const REQUIRED_CATEGORIES_FOR_EQUIPPED: ItemCategory[] = [
   "CHAUSSURES",
 ];
 
-const PANT_SIZES = Array.from({ length: 60 - 34 + 1 }, (_, i) => String(34 + i));
+// Tailles allemandes (préfixe "C") utilisées par le fournisseur pour les
+// pantalons et shorts, ex: C34, C35... C60.
+const PANT_SIZES = Array.from({ length: 60 - 34 + 1 }, (_, i) => `C${34 + i}`);
 
 export const SIZE_SUGGESTIONS: Record<string, string[]> = {
   TSHIRT: ["XS", "S", "M", "L", "XL", "XXL"],

@@ -71,9 +71,14 @@ export default async function DashboardPage() {
             </p>
           )}
         </div>
-        <LinkButton href="/perception" size="lg">
-          + Nouvelle perception
-        </LinkButton>
+        <div className="flex flex-wrap gap-3">
+          <LinkButton href="/reintegration" variant="secondary" size="lg">
+            ↩️ Réintégration
+          </LinkButton>
+          <LinkButton href="/perception" size="lg">
+            + Nouvelle perception
+          </LinkButton>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">

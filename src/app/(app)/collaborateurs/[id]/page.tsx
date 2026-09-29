@@ -43,7 +43,7 @@ export default async function CollaborateurDetailPage({
             {employee.active && !employee.operational && <Pill>Non opérationnel</Pill>}
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {isAdmin && (
             <LinkButton href={`/collaborateurs/${id}/modifier`} variant="secondary">
               Modifier

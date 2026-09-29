@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/", label: "Tableau de bord", icon: "🏠" },
   { href: "/collaborateurs", label: "Collaborateurs", icon: "👥" },
   { href: "/perception", label: "Nouvelle perception", icon: "➕" },
+  { href: "/reintegration", label: "Réintégration", icon: "↩️" },
   { href: "/stock", label: "Stock", icon: "📦" },
   { href: "/historique", label: "Historique", icon: "🕘" },
   { href: "/parametres", label: "Paramètres", icon: "⚙️" },

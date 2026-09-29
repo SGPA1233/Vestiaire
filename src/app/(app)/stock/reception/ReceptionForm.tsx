@@ -85,7 +85,7 @@ export function ReceptionForm({ catalog }: { catalog: ActiveCatalog }) {
           ✓
         </div>
         <h2 className="text-lg font-semibold text-slate-900">Réception enregistrée</h2>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           <Button variant="secondary" onClick={() => router.push("/stock")}>
             Voir le stock
           </Button>

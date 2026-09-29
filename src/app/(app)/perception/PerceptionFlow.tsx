@@ -162,7 +162,7 @@ export function PerceptionFlow({
             {employee.firstName} {employee.lastName}
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap justify-center gap-3">
           <Button variant="secondary" onClick={() => router.push(`/collaborateurs/${employee.id}`)}>
             Voir la fiche collaborateur
           </Button>

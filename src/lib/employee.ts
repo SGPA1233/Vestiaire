@@ -45,6 +45,45 @@ export async function getEmployeesWithStatus(): Promise<EmployeeWithStatus[]> {
   }));
 }
 
+export interface EmployeeWithHoldingsCount {
+  id: string;
+  firstName: string;
+  lastName: string;
+  heldCount: number;
+}
+
+/** Collaborateurs actifs ayant au moins un article actuellement en leur possession. */
+export async function getEmployeesWithHoldings(): Promise<EmployeeWithHoldingsCount[]> {
+  const lines = await prisma.distributionLine.findMany({
+    where: {
+      distribution: { employee: { active: true }, countsAsCurrentlyHeld: true },
+      quantityRemaining: { gt: 0 },
+    },
+    select: {
+      distribution: { select: { employeeId: true } },
+    },
+  });
+
+  const countByEmployee = new Map<string, number>();
+  for (const l of lines) {
+    const id = l.distribution.employeeId;
+    countByEmployee.set(id, (countByEmployee.get(id) ?? 0) + 1);
+  }
+  if (countByEmployee.size === 0) return [];
+
+  const employees = await prisma.employee.findMany({
+    where: { id: { in: [...countByEmployee.keys()] } },
+    orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+
+  return employees.map((e) => ({
+    id: e.id,
+    firstName: e.firstName,
+    lastName: e.lastName,
+    heldCount: countByEmployee.get(e.id) ?? 0,
+  }));
+}
+
 export async function searchEmployees(query: string, opts?: { activeOnly?: boolean }) {
   const employees = await prisma.employee.findMany({
     where: opts?.activeOnly ? { active: true } : {},

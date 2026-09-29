@@ -13,7 +13,7 @@ export default async function CollaborateursPage() {
           <h1 className="text-2xl font-bold text-slate-900">Collaborateurs</h1>
           <p className="mt-1 text-sm text-slate-500">{employees.length} collaborateur(s)</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <LinkButton href="/collaborateurs/manques" variant="secondary">
             Articles manquants{gaps.length > 0 ? ` (${gaps.length})` : ""}
           </LinkButton>

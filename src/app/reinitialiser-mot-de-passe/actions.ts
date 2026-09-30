@@ -47,7 +47,7 @@ export async function resetPassword(token: string, password: string): Promise<Re
   });
 
   if (!resetToken || !resetToken.user.active || resetToken.usedAt || resetToken.expiresAt < new Date()) {
-    await recordRateLimitEvent(rateLimitKey, PASSWORD_SETUP_RATE_LIMIT);
+    await recordRateLimitEvent(rateLimitKey);
     return { success: false, error: "Ce lien de réinitialisation est invalide ou a expiré." };
   }
 
@@ -68,7 +68,7 @@ export async function resetPassword(token: string, password: string): Promise<Re
 
       const updatedUser = await tx.user.updateMany({
         where: { id: resetToken.userId, active: true },
-        data: { passwordHash, sessionVersion: { increment: 1 } },
+        data: { passwordHash, updatedAt: usedAt },
       });
       if (updatedUser.count !== 1) throw new ConsumedTokenError();
       await tx.passwordResetToken.updateMany({
@@ -78,7 +78,7 @@ export async function resetPassword(token: string, password: string): Promise<Re
     });
   } catch (error) {
     if (!(error instanceof ConsumedTokenError)) throw error;
-    await recordRateLimitEvent(rateLimitKey, PASSWORD_SETUP_RATE_LIMIT);
+    await recordRateLimitEvent(rateLimitKey);
     return { success: false, error: "Ce lien de réinitialisation est invalide ou a expiré." };
   }
 

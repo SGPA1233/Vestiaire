@@ -37,15 +37,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const user = await prisma.user.findUnique({ where: { email } });
         const valid = await bcrypt.compare(password, user?.passwordHash ?? (await dummyPasswordHash));
         if (!user || !user.active || !valid) {
-          await recordRateLimitEvent(rateLimitKey, LOGIN_RATE_LIMIT);
+          await recordRateLimitEvent(rateLimitKey);
           return null;
         }
 
         await clearRateLimit(rateLimitKey);
 
-        await prisma.user.update({
+        const loggedInUser = await prisma.user.update({
           where: { id: user.id },
           data: { lastLoginAt: new Date() },
+          select: { updatedAt: true },
         });
         await writeAuditLog({
           userId: user.id,
@@ -60,7 +61,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
-          sessionVersion: user.sessionVersion,
+          sessionUpdatedAt: loggedInUser.updatedAt.toISOString(),
         };
       },
     }),
@@ -70,7 +71,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = (user as { role: string }).role;
         token.id = user.id as string;
-        token.sessionVersion = (user as { sessionVersion: number }).sessionVersion;
+        token.sessionUpdatedAt = (user as { sessionUpdatedAt: string }).sessionUpdatedAt;
       }
       return token;
     },
@@ -78,7 +79,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as "ADMIN" | "READONLY";
-        session.user.sessionVersion = token.sessionVersion as number;
+        session.user.sessionUpdatedAt = token.sessionUpdatedAt as string;
       }
       return session;
     },

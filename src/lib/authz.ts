@@ -23,13 +23,13 @@ async function getCurrentUser() {
       name: true,
       role: true,
       active: true,
-      sessionVersion: true,
+      updatedAt: true,
     },
   });
 
   if (
     !user?.active ||
-    user.sessionVersion !== session.user.sessionVersion
+    user.updatedAt.toISOString() !== session.user.sessionUpdatedAt
   ) {
     throw new UnauthorizedError("Cette session n'est plus valide. Reconnectez-vous.");
   }

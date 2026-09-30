@@ -41,7 +41,6 @@ async function main() {
       name,
       role: "ADMIN",
       active: true,
-      sessionVersion: { increment: 1 },
     },
     create: {
       email: email.toLowerCase(),

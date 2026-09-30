@@ -7,7 +7,7 @@
 - Utiliser un compte nominatif par administrateur et activer la double authentification sur
   GitHub, Vercel, Supabase, la messagerie et le gestionnaire du domaine.
 - Conserver les codes de récupération dans le coffre-fort de mots de passe SGPA.
-- Appliquer les migrations avant le nouveau code lors de chaque déploiement.
+- Appliquer les migrations une seule fois, séparément du build Vercel et avant le nouveau code.
 - Vérifier `npm audit`, les tests, le typage, le lint et la compilation avant publication.
 
 ## Gestion des accès applicatifs

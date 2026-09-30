@@ -121,7 +121,7 @@ export async function toggleUserActive(userId: string, active: boolean) {
 
   const user = await prisma.user.update({
     where: { id: parsed.data.userId },
-    data: { active: parsed.data.active, sessionVersion: { increment: 1 } },
+    data: { active: parsed.data.active, updatedAt: new Date() },
   });
 
   await writeAuditLog({

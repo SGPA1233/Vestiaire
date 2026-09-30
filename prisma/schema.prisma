@@ -22,16 +22,15 @@ enum UserRole {
 }
 
 model User {
-  id             String    @id @default(cuid())
-  email          String    @unique
-  passwordHash   String
-  name           String
-  role           UserRole  @default(ADMIN)
-  active         Boolean   @default(true)
-  sessionVersion Int       @default(0)
-  lastLoginAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         UserRole  @default(ADMIN)
+  active       Boolean   @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   auditLogs           AuditLog[]
   distributions       Distribution[]
@@ -41,17 +40,6 @@ model User {
   passwordResetTokens PasswordResetToken[]
 
   @@map("users")
-}
-
-model RateLimitBucket {
-  key          String    @id
-  count        Int       @default(0)
-  windowStart  DateTime
-  blockedUntil DateTime?
-  updatedAt    DateTime  @updatedAt
-
-  @@index([updatedAt])
-  @@map("rate_limit_buckets")
 }
 
 model PasswordResetToken {

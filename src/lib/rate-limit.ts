@@ -4,8 +4,10 @@ import { prisma } from "@/lib/prisma";
 export interface RateLimitRule {
   maxEvents: number;
   windowMs: number;
-  blockMs: number;
 }
+
+const RATE_LIMIT_ACTION = "RATE_LIMIT_EVENT";
+const RATE_LIMIT_ENTITY = "RateLimit";
 
 function rateLimitSecret(): string {
   return process.env.AUTH_SECRET ?? "development-rate-limit-secret";
@@ -22,64 +24,45 @@ export function getRequestIp(headers: Headers): string {
 }
 
 export async function isRateLimited(key: string, rule: RateLimitRule): Promise<boolean> {
-  const now = new Date();
-  const bucket = await prisma.rateLimitBucket.findUnique({ where: { key } });
-  if (!bucket) return false;
-  if (bucket.blockedUntil && bucket.blockedUntil > now) return true;
-
-  const windowCutoff = new Date(now.getTime() - rule.windowMs);
-  return bucket.windowStart > windowCutoff && bucket.count >= rule.maxEvents;
+  const windowCutoff = new Date(Date.now() - rule.windowMs);
+  const count = await prisma.auditLog.count({
+    where: {
+      action: RATE_LIMIT_ACTION,
+      entityType: RATE_LIMIT_ENTITY,
+      entityId: key,
+      createdAt: { gte: windowCutoff },
+    },
+  });
+  return count >= rule.maxEvents;
 }
 
-export async function recordRateLimitEvent(key: string, rule: RateLimitRule): Promise<void> {
-  const now = new Date();
-  const windowCutoff = new Date(now.getTime() - rule.windowMs);
-
-  await prisma.$transaction(async (tx) => {
-    const bucket = await tx.rateLimitBucket.findUnique({ where: { key } });
-
-    if (!bucket || bucket.windowStart <= windowCutoff) {
-      await tx.rateLimitBucket.upsert({
-        where: { key },
-        create: {
-          key,
-          count: 1,
-          windowStart: now,
-          blockedUntil: rule.maxEvents <= 1 ? new Date(now.getTime() + rule.blockMs) : null,
-        },
-        update: {
-          count: 1,
-          windowStart: now,
-          blockedUntil: rule.maxEvents <= 1 ? new Date(now.getTime() + rule.blockMs) : null,
-        },
-      });
-      return;
-    }
-
-    const nextCount = bucket.count + 1;
-    await tx.rateLimitBucket.update({
-      where: { key },
-      data: {
-        count: nextCount,
-        blockedUntil:
-          nextCount >= rule.maxEvents ? new Date(now.getTime() + rule.blockMs) : bucket.blockedUntil,
-      },
-    });
+export async function recordRateLimitEvent(key: string): Promise<void> {
+  await prisma.auditLog.create({
+    data: {
+      action: RATE_LIMIT_ACTION,
+      entityType: RATE_LIMIT_ENTITY,
+      entityId: key,
+      description: "Tentative refusée par la protection anti-abus",
+    },
   });
 }
 
 export async function clearRateLimit(key: string): Promise<void> {
-  await prisma.rateLimitBucket.deleteMany({ where: { key } });
+  await prisma.auditLog.deleteMany({
+    where: {
+      action: RATE_LIMIT_ACTION,
+      entityType: RATE_LIMIT_ENTITY,
+      entityId: key,
+    },
+  });
 }
 
 export const LOGIN_RATE_LIMIT: RateLimitRule = {
   maxEvents: 8,
-  windowMs: 15 * 60 * 1000,
-  blockMs: 30 * 60 * 1000,
+  windowMs: 30 * 60 * 1000,
 };
 
 export const PASSWORD_SETUP_RATE_LIMIT: RateLimitRule = {
   maxEvents: 10,
   windowMs: 60 * 60 * 1000,
-  blockMs: 60 * 60 * 1000,
 };

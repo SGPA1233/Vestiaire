@@ -74,10 +74,13 @@ particulier.
    - `AUTH_SECRET` (générez-en un avec `openssl rand -base64 32`)
    - `APP_URL` (par exemple `https://vestiaire-sgpa.vercel.app`)
    - `APP_NAME` (facultatif)
-4. Cliquez sur **Deploy**. Vercel installe les dépendances, applique les
-   migrations de base de données (`prisma migrate deploy`, configuré dans
-   `package.json`) et construit l'application automatiquement.
-5. Une fois déployé, Vercel donne une adresse du type
+4. Avant le premier déploiement, appliquez une fois les migrations depuis
+   une machine autorisée avec `npm run db:migrate`. Cette opération est
+   volontairement séparée du build afin que deux projets Vercel ne tentent
+   jamais de modifier la base en même temps.
+5. Cliquez sur **Deploy**. Vercel installe les dépendances et construit
+   l'application automatiquement.
+6. Une fois déployé, Vercel donne une adresse du type
    `https://dotation-app-xxxx.vercel.app`. Vous pouvez ensuite relier un nom
    de domaine propre (`dotation.sgpa.ch`) dans **Project Settings →
    Domains**.
@@ -96,7 +99,9 @@ npx tsx scripts/create-admin.ts --email admin@sgpa.ch --password "UnMotDePasseSo
 ### 2.4 Mises à jour
 
 Chaque `git push` sur la branche principale redéploie automatiquement
-l'application sur Vercel (build + migrations incluses).
+l'application sur Vercel. Lorsqu'une mise à jour contient un nouveau dossier
+dans `prisma/migrations`, faites d'abord une sauvegarde puis lancez
+`npm run db:migrate` une seule fois depuis une machine autorisée.
 
 ## 3. Déploiement alternatif : Docker + VPS
 

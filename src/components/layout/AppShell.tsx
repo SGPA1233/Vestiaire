@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { requireUserPage } from "@/lib/authz";
 import { NavLinks } from "./NavLinks";
 import { MobileMenu } from "./MobileMenu";
 import { SignOutButton } from "./SignOutButton";
@@ -13,7 +13,7 @@ function initials(name?: string | null): string {
 }
 
 export async function AppShell({ children }: { children: React.ReactNode }) {
-  const session = await auth();
+  const user = await requireUserPage();
 
   return (
     <div className="flex min-h-screen w-full">
@@ -45,14 +45,14 @@ export async function AppShell({ children }: { children: React.ReactNode }) {
           <div className="flex items-center gap-3">
             <div className="hidden text-right sm:block">
               <div className="text-sm font-medium text-brand-green-950">
-                {session?.user?.name}
+                {user.name}
               </div>
               <div className="text-xs text-brand-green-700">
-                {session?.user?.role === "ADMIN" ? "Administrateur" : "Lecture seule"}
+                {user.role === "ADMIN" ? "Administrateur" : "Lecture seule"}
               </div>
             </div>
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-green-100 text-xs font-bold text-brand-green-800">
-              {initials(session?.user?.name)}
+              {initials(user.name)}
             </div>
             <SignOutButton />
           </div>

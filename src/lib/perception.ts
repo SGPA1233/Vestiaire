@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { writeAuditLog } from "@/lib/audit";
+import { Prisma } from "@prisma/client";
 
 export class InsufficientStockError extends Error {
   constructor(public itemLabel: string, public available: number, public requested: number) {
@@ -26,20 +27,52 @@ export interface CreatePerceptionParams {
   lines: PerceptionLineInput[];
   returns: PerceptionReturnInput[];
   note?: string;
-  force?: boolean; // admin uniquement : outrepasser le contrôle de stock
 }
 
 export async function createPerception(params: CreatePerceptionParams) {
-  const { employeeId, campaignId, createdByUserId, lines, returns, note, force } = params;
+  const { employeeId, campaignId, createdByUserId, lines, returns, note } = params;
 
   return prisma.$transaction(async (tx) => {
+    const activeLines = lines.filter((line) => line.quantity > 0);
+    const activeReturns = returns.filter((line) => line.quantity > 0);
+    if (activeLines.length === 0 && activeReturns.length === 0) {
+      throw new Error("Ajoutez au moins un article distribué ou repris.");
+    }
+
+    if (new Set(activeLines.map((line) => line.itemVariantId)).size !== activeLines.length) {
+      throw new Error("Un même article ne peut apparaître qu'une fois dans la perception.");
+    }
+    if (
+      new Set(activeReturns.map((line) => line.distributionLineId)).size !== activeReturns.length
+    ) {
+      throw new Error("Un même article ne peut être repris qu'une fois.");
+    }
+
+    const [employee, campaign] = await Promise.all([
+      tx.employee.findUnique({ where: { id: employeeId }, select: { active: true } }),
+      tx.campaign.findUnique({
+        where: { id: campaignId },
+        select: { isActive: true, isArchive: true },
+      }),
+    ]);
+    if (!employee?.active) throw new Error("Ce collaborateur est introuvable ou inactif.");
+    if (!campaign?.isActive || campaign.isArchive) {
+      throw new Error("La campagne sélectionnée n'est plus active.");
+    }
+
     // 1. Vérifier le stock disponible pour chaque ligne demandée.
-    if (lines.length > 0) {
-      const variantIds = lines.map((l) => l.itemVariantId);
+    if (activeLines.length > 0) {
+      const variantIds = activeLines.map((line) => line.itemVariantId);
       const variants = await tx.itemVariant.findMany({
         where: { id: { in: variantIds } },
         include: { item: true },
       });
+      if (
+        variants.length !== variantIds.length ||
+        variants.some((variant) => !variant.active || !variant.item.active)
+      ) {
+        throw new Error("Un article sélectionné est introuvable ou désactivé.");
+      }
       const stockSums = await tx.stockMovement.groupBy({
         by: ["itemVariantId"],
         where: { itemVariantId: { in: variantIds } },
@@ -47,11 +80,10 @@ export async function createPerception(params: CreatePerceptionParams) {
       });
       const stockMap = new Map(stockSums.map((s) => [s.itemVariantId, s._sum.quantity ?? 0]));
 
-      for (const line of lines) {
-        if (line.quantity <= 0) continue;
+      for (const line of activeLines) {
         const variant = variants.find((v) => v.id === line.itemVariantId);
         const available = stockMap.get(line.itemVariantId) ?? 0;
-        if (!force && available < line.quantity) {
+        if (available < line.quantity) {
           throw new InsufficientStockError(
             variant ? `${variant.item.name} (${variant.size})` : line.itemVariantId,
             available,
@@ -62,7 +94,6 @@ export async function createPerception(params: CreatePerceptionParams) {
     }
 
     // 2. Créer la distribution + ses lignes.
-    const activeLines = lines.filter((l) => l.quantity > 0);
     const distribution = await tx.distribution.create({
       data: {
         employeeId,
@@ -97,14 +128,16 @@ export async function createPerception(params: CreatePerceptionParams) {
 
     // 3. Traiter les retours.
     const createdReturns = [];
-    for (const ret of returns) {
-      if (ret.quantity <= 0) continue;
+    for (const ret of activeReturns) {
       const distLine = await tx.distributionLine.findUnique({
         where: { id: ret.distributionLineId },
         include: { distribution: true },
       });
       if (!distLine) throw new Error("Ligne de distribution introuvable pour le retour");
-      if (!force && ret.quantity > distLine.quantityRemaining) {
+      if (distLine.distribution.employeeId !== employeeId) {
+        throw new Error("Cet article n'appartient pas au collaborateur sélectionné.");
+      }
+      if (ret.quantity > distLine.quantityRemaining) {
         throw new Error(
           `Quantité de retour (${ret.quantity}) supérieure à la quantité en possession (${distLine.quantityRemaining})`
         );
@@ -154,5 +187,8 @@ export async function createPerception(params: CreatePerceptionParams) {
     );
 
     return { distribution, returns: createdReturns };
-  }, { timeout: 15000 });
+  }, {
+    timeout: 15000,
+    isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+  });
 }

@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 const CLOTHING_SIZES = ["XS", "S", "M", "L", "XL", "XXL"];
-const PANTS_SIZES = ["34", "36", "38", "40", "42", "44", "46", "48", "50"];
+const PANTS_SIZES = ["C34", "C36", "C38", "C40", "C42", "C44", "C46", "C48", "C50"];
 const SHOE_SIZES = ["38", "39", "40", "41", "42", "43", "44", "45", "46"];
 
 const ITEM_CATALOG: {
@@ -30,10 +30,10 @@ const ITEM_CATALOG: {
 ];
 
 const DEMO_EMPLOYEES = [
-  { firstName: "Chloé", lastName: "Padé", sizes: { TSHIRT: "S", VESTE: "S", PANTALON: "34", CHAUSSURES: "39" } },
-  { firstName: "Dylan", lastName: "Morel", sizes: { TSHIRT: "XL", VESTE: "XL", PANTALON: "50", CHAUSSURES: "44" } },
-  { firstName: "Maeva", lastName: "Madrid", sizes: { TSHIRT: "M", VESTE: "M", PANTALON: "38", CHAUSSURES: "40" } },
-  { firstName: "Nicolas", lastName: "Godeau", sizes: { TSHIRT: "L", VESTE: "L", PANTALON: "42", CHAUSSURES: "44", BOTTES: "44" } },
+  { firstName: "Employé", lastName: "Démo A", sizes: { TSHIRT: "S", VESTE: "S", PANTALON: "C34", CHAUSSURES: "39" } },
+  { firstName: "Employé", lastName: "Démo B", sizes: { TSHIRT: "XL", VESTE: "XL", PANTALON: "C50", CHAUSSURES: "44" } },
+  { firstName: "Employé", lastName: "Démo C", sizes: { TSHIRT: "M", VESTE: "M", PANTALON: "C38", CHAUSSURES: "40" } },
+  { firstName: "Employé", lastName: "Démo D", sizes: { TSHIRT: "L", VESTE: "L", PANTALON: "C42", CHAUSSURES: "44", BOTTES: "44" } },
 ];
 
 async function main() {
@@ -41,7 +41,10 @@ async function main() {
 
   // --- Utilisateur administrateur ---
   const adminEmail = process.env.SEED_ADMIN_EMAIL ?? "admin@entreprise.ch";
-  const adminPassword = process.env.SEED_ADMIN_PASSWORD ?? "ChangeMoi123!";
+  const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+  if (!adminPassword || adminPassword.length < 12) {
+    throw new Error("SEED_ADMIN_PASSWORD doit être défini et contenir au moins 12 caractères.");
+  }
   const passwordHash = await bcrypt.hash(adminPassword, 12);
 
   await prisma.user.upsert({
@@ -54,7 +57,7 @@ async function main() {
       passwordHash,
     },
   });
-  console.log(`Compte administrateur prêt : ${adminEmail} / ${adminPassword}`);
+  console.log(`Compte administrateur prêt : ${adminEmail}`);
 
   // --- Campagnes ---
   const archiveCampaign = await prisma.campaign.upsert({

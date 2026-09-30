@@ -7,16 +7,16 @@ import { requireAdmin } from "@/lib/authz";
 import { createPerception, InsufficientStockError } from "@/lib/perception";
 
 const payloadSchema = z.object({
-  employeeId: z.string().min(1),
-  lines: z.array(z.object({ itemVariantId: z.string(), quantity: z.number().int().min(0) })),
+  employeeId: z.string().min(1).max(128),
+  lines: z.array(z.object({ itemVariantId: z.string().min(1).max(128), quantity: z.number().int().min(0).max(100) })).max(100),
   returns: z.array(
     z.object({
-      distributionLineId: z.string(),
-      quantity: z.number().int().min(0),
+      distributionLineId: z.string().min(1).max(128),
+      quantity: z.number().int().min(0).max(100),
       reusable: z.boolean(),
     })
-  ),
-  note: z.string().optional(),
+  ).max(100),
+  note: z.string().max(1000).optional(),
 });
 
 export type SubmitPerceptionResult =
@@ -42,9 +42,6 @@ export async function submitPerception(
       lines: parsed.lines,
       returns: parsed.returns,
       note: parsed.note,
-      // Le stock calculé n'est pas encore fiable (import fournisseur en attente) :
-      // ne pas bloquer les perceptions dessus tant que ce n'est pas rétabli.
-      force: true,
     });
 
     revalidatePath("/");

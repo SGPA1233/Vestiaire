@@ -36,7 +36,7 @@ export function UploadForm() {
         name="csv"
         rows={6}
         required
-        placeholder={"prenom;nom;categorie;taille;quantite;date\nNicolas;Godeau;Chaussures;44;1;09/02/2026"}
+        placeholder={"prenom;nom;categorie;taille;quantite;date\nEmployé;Démo A;Chaussures;44;1;09/02/2026"}
         className="w-full rounded-lg border border-black/10 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100"
       />
       {message && (

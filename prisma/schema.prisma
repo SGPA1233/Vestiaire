@@ -22,34 +22,46 @@ enum UserRole {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String
-  role         UserRole @default(ADMIN)
-  active       Boolean  @default(true)
-  lastLoginAt  DateTime?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String
+  name           String
+  role           UserRole  @default(ADMIN)
+  active         Boolean   @default(true)
+  sessionVersion Int       @default(0)
+  lastLoginAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  auditLogs          AuditLog[]
-  distributions      Distribution[]
-  returns            Return[]
-  stockMovements     StockMovement[]
-  corrections        Correction[]
+  auditLogs           AuditLog[]
+  distributions       Distribution[]
+  returns             Return[]
+  stockMovements      StockMovement[]
+  corrections         Correction[]
   passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
 
+model RateLimitBucket {
+  key          String    @id
+  count        Int       @default(0)
+  windowStart  DateTime
+  blockedUntil DateTime?
+  updatedAt    DateTime  @updatedAt
+
+  @@index([updatedAt])
+  @@map("rate_limit_buckets")
+}
+
 model PasswordResetToken {
-  id        String   @id @default(cuid())
-  token     String   @unique
+  id        String    @id @default(cuid())
+  token     String    @unique
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   @@map("password_reset_tokens")
 }
@@ -208,22 +220,22 @@ enum DistributionSource {
 }
 
 model Distribution {
-  id                  String             @id @default(cuid())
-  employeeId          String
-  employee            Employee           @relation(fields: [employeeId], references: [id])
-  campaignId          String
-  campaign            Campaign           @relation(fields: [campaignId], references: [id])
-  date                DateTime           @default(now())
-  source              DistributionSource @default(NORMAL)
-  affectsStock        Boolean            @default(true) // false pour migration/archive
-  countsAsCurrentlyHeld Boolean          @default(true) // false pour archive pure
-  note                String?
-  createdByUserId     String
-  createdByUser       User               @relation(fields: [createdByUserId], references: [id])
-  createdAt           DateTime           @default(now())
+  id                    String             @id @default(cuid())
+  employeeId            String
+  employee              Employee           @relation(fields: [employeeId], references: [id])
+  campaignId            String
+  campaign              Campaign           @relation(fields: [campaignId], references: [id])
+  date                  DateTime           @default(now())
+  source                DistributionSource @default(NORMAL)
+  affectsStock          Boolean            @default(true) // false pour migration/archive
+  countsAsCurrentlyHeld Boolean            @default(true) // false pour archive pure
+  note                  String?
+  createdByUserId       String
+  createdByUser         User               @relation(fields: [createdByUserId], references: [id])
+  createdAt             DateTime           @default(now())
 
-  lines       DistributionLine[]
-  signature   Signature?
+  lines     DistributionLine[]
+  signature Signature?
 
   @@index([employeeId])
   @@index([campaignId])
@@ -231,11 +243,11 @@ model Distribution {
 }
 
 model DistributionLine {
-  id                String      @id @default(cuid())
+  id                String       @id @default(cuid())
   distributionId    String
   distribution      Distribution @relation(fields: [distributionId], references: [id], onDelete: Cascade)
   itemVariantId     String
-  itemVariant       ItemVariant @relation(fields: [itemVariantId], references: [id])
+  itemVariant       ItemVariant  @relation(fields: [itemVariantId], references: [id])
   quantity          Int
   quantityRemaining Int // décrémenté par les retours ; détermine "actuellement en possession"
 
@@ -305,18 +317,18 @@ enum MigrationStatus {
 }
 
 model MigrationImportItem {
-  id               String          @id @default(cuid())
-  employeeNameRaw  String
-  employeeId       String?
-  category         ItemCategory
-  size             String?
-  quantity         Int             @default(1)
-  dateRaw          DateTime?
-  status           MigrationStatus @default(TO_CONFIRM)
-  sourceRow        Json?
-  resultingDistId  String?
-  createdAt        DateTime        @default(now())
-  reviewedAt       DateTime?
+  id              String          @id @default(cuid())
+  employeeNameRaw String
+  employeeId      String?
+  category        ItemCategory
+  size            String?
+  quantity        Int             @default(1)
+  dateRaw         DateTime?
+  status          MigrationStatus @default(TO_CONFIRM)
+  sourceRow       Json?
+  resultingDistId String?
+  createdAt       DateTime        @default(now())
+  reviewedAt      DateTime?
 
   @@map("migration_import_items")
 }

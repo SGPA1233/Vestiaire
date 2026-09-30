@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 
-const PUBLIC_PATHS = ["/login", "/mot-de-passe-oublie", "/reinitialiser-mot-de-passe"];
+const PUBLIC_PATHS = [
+  "/login",
+  "/mot-de-passe-oublie",
+  "/reinitialiser-mot-de-passe",
+  "/api/health",
+];
+
+function matchesPath(pathname: string, path: string): boolean {
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
 
   const isPublic =
-    PUBLIC_PATHS.some((p) => pathname.startsWith(p)) ||
-    pathname.startsWith("/api/auth");
+    PUBLIC_PATHS.some((path) => matchesPath(pathname, path)) ||
+    matchesPath(pathname, "/api/auth");
 
   if (isPublic) return NextResponse.next();
 

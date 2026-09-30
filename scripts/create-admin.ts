@@ -27,8 +27,8 @@ async function main() {
     process.exit(1);
   }
 
-  if (password.length < 8) {
-    console.error("Le mot de passe doit contenir au moins 8 caractères.");
+  if (password.length < 12 || password.length > 128) {
+    console.error("Le mot de passe doit contenir entre 12 et 128 caractères.");
     process.exit(1);
   }
 
@@ -36,7 +36,13 @@ async function main() {
 
   const user = await prisma.user.upsert({
     where: { email: email.toLowerCase() },
-    update: { passwordHash, name, role: "ADMIN", active: true },
+    update: {
+      passwordHash,
+      name,
+      role: "ADMIN",
+      active: true,
+      sessionVersion: { increment: 1 },
+    },
     create: {
       email: email.toLowerCase(),
       name,

@@ -9,18 +9,18 @@ export function NewUserForm() {
   const formRef = useRef<HTMLFormElement>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
+  const [setupUrl, setSetupUrl] = useState<string | null>(null);
 
   function handleSubmit(formData: FormData) {
     setError(null);
-    setSuccess(false);
+    setSetupUrl(null);
     startTransition(async () => {
       const result = await createUser(formData);
       if (!result.success) {
         setError(result.error);
         return;
       }
-      setSuccess(true);
+      setSetupUrl(result.setupUrl);
       formRef.current?.reset();
     });
   }
@@ -36,10 +36,6 @@ export function NewUserForm() {
         <Input id="email" name="email" type="email" required placeholder="prenom.nom@entreprise.ch" />
       </div>
       <div>
-        <Label htmlFor="password">Mot de passe temporaire</Label>
-        <Input id="password" name="password" type="text" required minLength={8} />
-      </div>
-      <div>
         <Label htmlFor="role">Rôle</Label>
         <Select id="role" name="role" defaultValue="ADMIN">
           <option value="ADMIN">Administrateur</option>
@@ -48,10 +44,23 @@ export function NewUserForm() {
       </div>
 
       {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
-      {success && (
-        <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-          Compte créé. Communiquez le mot de passe temporaire à la personne concernée.
-        </p>
+      {setupUrl && (
+        <div className="rounded-lg bg-emerald-50 px-3 py-3 text-sm text-emerald-800">
+          <p className="font-medium">Compte créé.</p>
+          <p className="mt-1">
+            Transmettez ce lien unique à la personne concernée. Il expire dans 24 heures.
+          </p>
+          <p className="mt-2 break-all rounded bg-white/70 px-2 py-2 font-mono text-xs">
+            {setupUrl}
+          </p>
+          <button
+            type="button"
+            className="mt-2 font-medium underline"
+            onClick={() => navigator.clipboard.writeText(setupUrl)}
+          >
+            Copier le lien
+          </button>
+        </div>
       )}
 
       <div>

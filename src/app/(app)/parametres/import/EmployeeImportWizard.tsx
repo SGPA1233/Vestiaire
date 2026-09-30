@@ -35,7 +35,7 @@ export function EmployeeImportWizard() {
         rows={5}
         value={text}
         onChange={(e) => setText(e.target.value)}
-        placeholder={"prenom;nom;actif;operationnel;tshirt;veste;pantalon;chaussures\nChloé;Padé;oui;oui;S;S;34;39"}
+        placeholder={"prenom;nom;actif;operationnel;tshirt;veste;pantalon;chaussures\nEmployé;Démo A;oui;oui;S;S;C34;39"}
         className="w-full rounded-lg border border-black/10 px-3.5 py-2.5 font-mono text-xs outline-none focus:border-brand-green-600 focus:ring-2 focus:ring-brand-green-100"
       />
       <div>

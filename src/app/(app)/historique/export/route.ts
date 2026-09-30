@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/auth";
 import { getHistoryRows, HistoryFilters } from "@/lib/historique";
 import { toCsv } from "@/lib/csv";
 import { formatDateTime } from "@/lib/format";
+import { requireUser, UnauthorizedError } from "@/lib/authz";
 
 export async function GET(request: NextRequest) {
-  const session = await auth();
-  if (!session?.user) {
+  try {
+    await requireUser();
+  } catch (error) {
+    if (!(error instanceof UnauthorizedError)) throw error;
     return NextResponse.json({ error: "Non authentifié" }, { status: 401 });
   }
 

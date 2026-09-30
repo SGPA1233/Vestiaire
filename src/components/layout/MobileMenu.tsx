@@ -1,14 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { createPortal } from "react-dom";
 import { NavLinks } from "./NavLinks";
 
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => setMounted(true), []);
 
   return (
     <>
@@ -20,7 +17,7 @@ export function MobileMenu() {
         ☰
       </button>
       {open &&
-        mounted &&
+        typeof document !== "undefined" &&
         createPortal(
           // Rendu dans un portail (hors du header en backdrop-blur) : un
           // ancêtre avec backdrop-filter crée son propre bloc englobant pour

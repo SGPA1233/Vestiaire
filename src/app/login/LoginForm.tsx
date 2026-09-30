@@ -7,11 +7,13 @@ import { Card } from "@/components/ui/Card";
 import { Input, Label } from "@/components/ui/Field";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
+import { safeInternalPath } from "@/lib/navigation";
 
 export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = safeInternalPath(searchParams.get("callbackUrl"));
+  const sessionExpired = searchParams.get("session") === "expired";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -43,6 +45,11 @@ export function LoginForm() {
   return (
     <Card>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        {sessionExpired && (
+          <p className="rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+            Votre session a expiré ou vos accès ont été modifiés. Reconnectez-vous.
+          </p>
+        )}
         <div>
           <Label htmlFor="email">Adresse email</Label>
           <Input

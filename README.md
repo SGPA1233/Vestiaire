@@ -19,6 +19,7 @@ Google ou à un compte Gmail personnel.
 8. [Import des anciennes données](#8-import-des-anciennes-données)
 9. [Guide utilisateur rapide](#9-guide-utilisateur-rapide)
 10. [Architecture](#10-architecture)
+11. [Sécurité et continuité](#11-sécurité-et-continuité)
 
 ---
 
@@ -71,9 +72,8 @@ particulier.
 3. Dans **Environment Variables**, ajoutez :
    - `DATABASE_URL` et `DIRECT_URL` (récupérées à l'étape 2.1)
    - `AUTH_SECRET` (générez-en un avec `openssl rand -base64 32`)
+   - `APP_URL` (par exemple `https://vestiaire-sgpa.vercel.app`)
    - `APP_NAME` (facultatif)
-   - `SMTP_*` si vous voulez l'envoi d'emails de réinitialisation (voir
-     `.env.example`)
 4. Cliquez sur **Deploy**. Vercel installe les dépendances, applique les
    migrations de base de données (`prisma migrate deploy`, configuré dans
    `package.json`) et construit l'application automatiquement.
@@ -138,8 +138,14 @@ npm run create-admin -- --email admin@entreprise.ch --password "UnMotDePasseSoli
 
 Ce script peut être relancé pour créer d'autres comptes administrateurs ou
 réinitialiser un mot de passe (il met à jour le compte si l'email existe déjà).
-Les comptes supplémentaires peuvent ensuite être créés directement dans
-l'application, dans **Paramètres → Utilisateurs**.
+Les comptes supplémentaires doivent ensuite être créés directement dans
+l'application, dans **Paramètres → Utilisateurs**. L'application génère un
+lien d'accès unique : aucun mot de passe temporaire ne doit être partagé.
+
+La page publique « Mot de passe oublié » ne génère aucun jeton. Un autre
+administrateur doit créer un lien d'accès depuis **Paramètres → Utilisateurs**.
+La commande `create-admin` est réservée à la récupération d'urgence lorsque
+plus aucun administrateur ne peut se connecter.
 
 ## 5. Sauvegardes
 
@@ -251,3 +257,17 @@ Tout est automatique ensuite : stock mis à jour, fiche du collaborateur mise
   données (`Signature`) mais désactivée par défaut (`ENABLE_SIGNATURE`) et
   non branchée dans l'interface dans cette version — activable comme
   évolution future sans changement de structure.
+
+## 11. Sécurité et continuité
+
+- Chaque personne utilise son propre compte ; les mots de passe ne sont jamais partagés.
+- SGPA conserve la propriété de GitHub, Vercel, Supabase, du domaine et des sauvegardes.
+- Deux personnes SGPA au minimum disposent des accès de récupération et de la double
+  authentification.
+- Le développeur ou prestataire dispose d'un accès de maintenance révocable, sans être
+  l'unique propriétaire des services.
+- Une sauvegarde et une restauration doivent être testées régulièrement.
+
+Voir [`SECURITY.md`](SECURITY.md) pour les règles techniques et
+[`docs/CONTINUITE.md`](docs/CONTINUITE.md) pour la répartition précise des accès,
+la procédure de départ d'un mainteneur et la récupération d'urgence.
